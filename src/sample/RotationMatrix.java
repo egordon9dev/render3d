@@ -3,26 +3,47 @@ package sample;
 import org.ejml.simple.SimpleMatrix;
 
 class RotationMatrix {
-    private Axis axis;
+    private Vec3 axis;
     private double angle;
     private Vec3 pivot;
 
     RotationMatrix(Axis axis, double angle, Vec3 pivot) {
-        this.axis = axis;
+        this(axis.toVec3(), angle, pivot);
+    }
+
+    RotationMatrix(Vec3 axis, double angle, Vec3 pivot) {
+        if (axis.mag() < 0.000001) {
+            throw new IllegalArgumentException("Error creating rotation matrix: axis cannot be the zero vector");
+        }
+        this.axis = axis.unit();
         this.angle = angle;
         this.pivot = pivot;
+    }
+
+    Vec3 getAxis() {
+        return axis;
+    }
+
+    double getAngle() {
+        return angle;
     }
 
     void setAngle(double angle) {
         this.angle = angle;
     }
 
-    Axis getAxis() {
-        return axis;
+    void setAxis(Vec3 v) {
+        setAxis(v.get(0), v.get(1), v.get(2));
     }
 
-    double getAngle() {
-        return angle;
+    void setAxis(double d1, double d2, double d3) {
+        if (Math.sqrt(d1 * d1 + d2 * d2 + d3 * d3) < 0.000001) {
+            throw new IllegalArgumentException("axis cannot be the zero vector");
+        }
+        axis.set(0, d1);
+        axis.set(1, d2);
+        axis.set(2, d3);
+        axis = axis.unit();
     }
 
     void setPivot(Vec3 v) {
@@ -43,31 +64,46 @@ class RotationMatrix {
         for (int col = 0; col < delta0.numCols(); col++) {
             mag0[col] = Math.sqrt(delta0.get(0, col) * delta0.get(0, col) + delta0.get(1, col) * delta0.get(1, col) + delta0.get(2, col) * delta0.get(2, col));
         }
-        SimpleMatrix rot = null;
-        switch (axis) {
-            case Z:
-                rot = new SimpleMatrix(new double[][]{
-                        {cosA, -sinA, 0},
-                        {sinA, cosA, 0},
-                        {0, 0, 1}
-                });
-                break;
-            case Y:
-                rot = new SimpleMatrix(new double[][]{
-                        {cosA, 0, sinA},
-                        {0, 1, 0},
-                        {-sinA, 0, cosA}
-                });
-                break;
-            case X:
-                rot = new SimpleMatrix(new double[][]{
-                        {1, 0, 0},
-                        {0, cosA, -sinA},
-                        {0, sinA, cosA}
-                });
-                break;
+        ;
+//        switch (axis) {
+//            case Z:
+//                rot = new SimpleMatrix(new double[][]{
+//                        {cosA, -sinA, 0},
+//                        {sinA, cosA, 0},
+//                        {0, 0, 1}
+//                });
+//                break;
+//            case Y:
+//                rot = new SimpleMatrix(new double[][]{
+//                        {cosA, 0, sinA},
+//                        {0, 1, 0},
+//                        {-sinA, 0, cosA}
+//                });
+//                break;
+//            case X:
+        SimpleMatrix rot = new SimpleMatrix(new double[][]{
+                {1, 0, 0},
+                {0, cosA, -sinA},
+                {0, sinA, cosA}
+        });
+        Vec3 v1 = axis, v2, v3;
+        if (axis.get(2) == 0) {
+            v3 = new Vec3(0, 0, 1);
+        } else {
+            v3 = new Vec3(0, 1, -axis.get(1) / axis.get(2)).unit();
         }
-        SimpleMatrix result = rot.mult(mat.minus(transMatrix)).plus(transMatrix);
+        v2 = v3.cross(v1).unit();
+        if (Math.abs(v1.dot(v2)) > 0.000001 || Math.abs(v1.dot(v3)) > 0.000001 || Math.abs(v2.dot(v3)) > 0.000001
+                || Math.abs(v1.mag() - 1) > 0.000001 || Math.abs(v2.mag() - 1) > 0.000001 || Math.abs(v3.mag() - 1) > 0.000001) {
+            throw new ArithmeticException("Error multiplying by RotationMatrix: cannot create orthonormal basis");
+        }
+        SimpleMatrix basis = new SimpleMatrix(new double[][]{
+                {v1.get(0), v2.get(0), v3.get(0)},
+                {v1.get(1), v2.get(1), v3.get(1)},
+                {v1.get(2), v2.get(2), v3.get(2)}
+        });
+        SimpleMatrix verticesInBasis = basis.invert().mult(mat.minus(transMatrix));
+        SimpleMatrix result = basis.mult(rot).mult(verticesInBasis).plus(transMatrix);
         SimpleMatrix deltaf = result.minus(transMatrix);
         double[] magf = new double[deltaf.numCols()];
         for (int col = 0; col < deltaf.numCols(); col++) {

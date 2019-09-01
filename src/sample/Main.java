@@ -61,17 +61,19 @@ public class Main extends Application {
         }
         double transX = pane.getWidth() / 2, transY = pane.getHeight() / 2, scale = 100;
         List<Line> lines = new ArrayList<>();
-        /*
+
         Vec3 sum = new Vec3();
         for (int i = 0; i < vertices.numCols(); i++) {
+            double z = Math.abs(vertices.get(2, i));
+            vertices.set(0, i, vertices.get(0, i) / (z * 0.5));
+            vertices.set(1, i, vertices.get(1, i) / (z * 0.5));
             Vec3 toI = new Vec3(vertices.get(0, i) - cameraPos.get(0), vertices.get(1, i) - cameraPos.get(1), vertices.get(2, i) - cameraPos.get(2));
-            if (toI.dot(cameraGaze) < 1) {
+            if (toI.dot(cameraGaze) < 0) {
                 return null;
             }
             sum.plus(new Vec3(vertices.get(0, i), vertices.get(1, i), vertices.get(2, i)));
         }
         Vec3 center = new Vec3(sum.get(0) / vertices.numCols(), sum.get(1) / vertices.numCols(), sum.get(2) / vertices.numCols());
-        scale /= center.minus(cameraPos).dot(cameraGaze);*/
         for (int i = 0; i < 4; i++) {
             Line line1 = new Line(transX + scale * (vertices.get(0, i)), transY + scale * (vertices.get(1, i)),
                     transX + scale * (vertices.get(0, i + 4)), transY + scale * (vertices.get(1, i + 4)));
@@ -154,12 +156,13 @@ public class Main extends Application {
             SimpleMatrix cameraPosMatrix = new SimpleMatrix(cameraPositions);
             //calculate coordinates within the camera's coordinate axes
             SimpleMatrix verticesInBasis = cameraBasis.invert().mult(verticesMatrix.minus(cameraPosMatrix));
-            double val1 = cameraGaze.cross(new Vec3(0, 0, -1)).dot(cameraUp);
-            double val2 = cameraGaze.cross(new Vec3(0, 0, -1)).dot(cameraUp.cross(cameraGaze));
-            int signAngle = val1 != 0 ? (val1 > 0 ? 1 : -1) : val2 != 0 ? (val2 > 0 ? 1 : -1) : 1;
             //----- prepare for projection: rotate gaze direction to z-axis
-            rotToZAxis.setAngle(signAngle * cameraGaze.angleBetween(new Vec3(0, 0, -1)));
-            verticesInBasis = rotToZAxis.mult(verticesInBasis);
+            rotToZAxis.setAngle(-cameraGaze.angleBetween(new Vec3(0, 0, -1)));
+            Vec3 rotationAxis = new Vec3(0, 0, -1).cross(cameraGaze);
+            if (rotationAxis.mag() > 0.000001) {
+                rotToZAxis.setAxis(rotationAxis);
+                verticesInBasis = rotToZAxis.mult(verticesInBasis);
+            }
             int cols = verticesInBasis.numCols();
             if (cols != 8) {
                 throw new ArithmeticException("Oops we lost sum columns. cols: " + cols);
