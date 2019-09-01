@@ -1,5 +1,7 @@
 package sample;
 
+import org.ejml.simple.SimpleMatrix;
+
 class Vec3 {
     public static final Vec3 I = new Vec3(1, 0, 0);
     public static final Vec3 J = new Vec3(0, 1, 0);
@@ -33,8 +35,24 @@ class Vec3 {
         return new Vec3(_0, _1, _2);
     }
 
+    Vec3 cross(SimpleMatrix mat) {
+        if (mat.numRows() == 3 && mat.numCols() == 1) {
+            return cross(new Vec3(mat.get(0, 0), mat.get(1, 0), mat.get(2, 0)));
+        } else {
+            throw new IllegalArgumentException("can't cross Simple Matrix " + mat.numRows() + " x " + mat.numCols() + " and Vec3");
+        }
+    }
+
     double dot(Vec3 v2) {
         return v[0] * v2.get(0) + v[1] * v2.get(1) + v[2] * v2.get(2);
+    }
+
+    double dot(SimpleMatrix mat) {
+        if (mat.numRows() == 3 && mat.numCols() == 1) {
+            return dot(new Vec3(mat.get(0, 0), mat.get(1, 0), mat.get(2, 0)));
+        } else {
+            throw new IllegalArgumentException("can't dot Simple Matrix " + mat.numRows() + " x " + mat.numCols() + " and Vec3");
+        }
     }
 
     Vec3 scalarMult(double d) {
@@ -45,8 +63,24 @@ class Vec3 {
         return new Vec3(v[0] + v2.get(0), v[1] + v2.get(1), v[2] + v2.get(2));
     }
 
+    Vec3 plus(SimpleMatrix mat) {
+        if (mat.numRows() == 3 && mat.numCols() == 1) {
+            return plus(new Vec3(mat.get(0, 0), mat.get(1, 0), mat.get(2, 0)));
+        } else {
+            throw new IllegalArgumentException("can't add Simple Matrix " + mat.numRows() + " x " + mat.numCols() + " to Vec3");
+        }
+    }
+
     Vec3 minus(Vec3 v2) {
         return new Vec3(v[0] - v2.get(0), v[1] - v2.get(1), v[2] - v2.get(2));
+    }
+
+    Vec3 minus(SimpleMatrix mat) {
+        if (mat.numRows() == 3 && mat.numCols() == 1) {
+            return minus(new Vec3(mat.get(0, 0), mat.get(1, 0), mat.get(2, 0)));
+        } else {
+            throw new IllegalArgumentException("can't subtract Simple Matrix " + mat.numRows() + " x " + mat.numCols() + " from Vec3");
+        }
     }
 
     double angleBetween(Vec3 v2) {
