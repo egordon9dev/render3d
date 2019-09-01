@@ -153,21 +153,22 @@ public class Main extends Application {
             }
             SimpleMatrix cameraPosMatrix = new SimpleMatrix(cameraPositions);
             //calculate coordinates within the camera's coordinate axes
-            SimpleMatrix verticesInBasis = cameraBasis.invert().mult(verticesMatrix.minus(cameraPosMatrix));
+//            SimpleMatrix verticesInBasis = cameraBasis.invert().mult(verticesMatrix.minus(cameraPosMatrix));
             //----- prepare for projection: rotate gaze direction to z-axis
             double rotationAngle = cameraGaze.angleBetween(new Vec3(0, 0, -1));
-            if (rotationAngle > Math.PI / 2) rotationAngle -= Math.PI;
-            rotToZAxis.setAngle(-rotationAngle);
-            Vec3 rotationAxis = new Vec3(0, 0, -1).cross(cameraGaze);
+//            if (rotationAngle > Math.PI / 2) rotationAngle -= Math.PI;
+            rotToZAxis.setAngle(rotationAngle);
+            rotToZAxis.setPivot(cameraPos);
+            Vec3 rotationAxis = cameraGaze.cross(new Vec3(0, 0, -1));
             if (rotationAxis.mag() > 0.000001) {
                 rotToZAxis.setAxis(rotationAxis);
-                verticesInBasis = rotToZAxis.mult(verticesInBasis);
+                verticesMatrix = rotToZAxis.mult(verticesMatrix);
             }
-            int cols = verticesInBasis.numCols();
+            int cols = verticesMatrix.numCols();
             if (cols != 8) {
                 throw new ArithmeticException("Oops we lost sum columns. cols: " + cols);
             }
-            lines = getEdges(verticesInBasis);
+            lines = getEdges(verticesMatrix.minus(cameraPosMatrix));
             pane.getChildren().clear();
             if (lines != null) {
                 pane.getChildren().addAll(lines);
