@@ -2,7 +2,7 @@ package sample;
 
 import org.ejml.simple.SimpleMatrix;
 
-class Vec3 {
+class Vec3 implements Cloneable {
     public static final Vec3 I = new Vec3(1, 0, 0);
     public static final Vec3 J = new Vec3(0, 1, 0);
     public static final Vec3 K = new Vec3(0, 0, 1);
@@ -120,5 +120,10 @@ class Vec3 {
 
     double[] toArray() {
         return new double[]{v[0], v[1], v[2]};
+    }
+
+    @Override
+    public Vec3 clone() {
+        return new Vec3(v[0], v[1], v[2]);
     }
 }

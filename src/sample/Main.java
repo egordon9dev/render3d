@@ -123,20 +123,18 @@ public class Main extends Application {
                 {1, 1, 1},
                 {1, -1, 1}
         };
-        RotationMatrix rotX = new RotationMatrix(Axis.X, 0, new Vec3(0, 0, 0));
-        RotationMatrix rotY = new RotationMatrix(Axis.Y, 0, new Vec3(0, 0, 0));
-        RotationMatrix rotZ = new RotationMatrix(Axis.Z, 0, new Vec3(0, 0, 0));
+        RotationMatrix rotVertical = new RotationMatrix(Axis.X, 0, new Vec3(0, 0, 0));
+        RotationMatrix rotHorizontal = new RotationMatrix(Axis.Y, 0, new Vec3(0, 0, 0));
         RotationMatrix rotToZAxis = new RotationMatrix(Axis.Y, 0, new Vec3(0, 0, 0));
         Timeline animation = new Timeline(new KeyFrame(Duration.millis(10), e -> {
-            rotX.setAngle(cameraRotVel.get(0));
-            rotY.setAngle(cameraRotVel.get(1));
-            rotZ.setAngle(cameraRotVel.get(2));
-            cameraGaze = rotZ.mult(cameraGaze);
-            cameraGaze = rotY.mult(cameraGaze);
-            cameraGaze = rotX.mult(cameraGaze);
-            cameraUp = rotZ.mult(cameraUp);
-            cameraUp = rotY.mult(cameraUp);
-            cameraUp = rotX.mult(cameraUp);
+            rotVertical.setAxis(cameraGaze.cross(cameraUp));
+            rotVertical.setAngle(cameraRotVel.get(0));
+            rotHorizontal.setAxis(cameraUp);
+            rotHorizontal.setAngle(cameraRotVel.get(1));
+            cameraGaze = rotHorizontal.mult(cameraGaze);
+            cameraGaze = rotVertical.mult(cameraGaze);
+            cameraUp = rotHorizontal.mult(cameraUp);
+            cameraUp = rotVertical.mult(cameraUp);
             SimpleMatrix cameraBasis = getCameraBasis();
             //----- update camera position and gaze direction -----
             cameraPos = cameraPos.plus(cameraBasis.mult(cameraVel));
@@ -157,7 +155,9 @@ public class Main extends Application {
             //calculate coordinates within the camera's coordinate axes
             SimpleMatrix verticesInBasis = cameraBasis.invert().mult(verticesMatrix.minus(cameraPosMatrix));
             //----- prepare for projection: rotate gaze direction to z-axis
-            rotToZAxis.setAngle(-cameraGaze.angleBetween(new Vec3(0, 0, -1)));
+            double rotationAngle = cameraGaze.angleBetween(new Vec3(0, 0, -1));
+            if (rotationAngle > Math.PI / 2) rotationAngle -= Math.PI;
+            rotToZAxis.setAngle(-rotationAngle);
             Vec3 rotationAxis = new Vec3(0, 0, -1).cross(cameraGaze);
             if (rotationAxis.mag() > 0.000001) {
                 rotToZAxis.setAxis(rotationAxis);

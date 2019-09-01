@@ -17,7 +17,7 @@ class RotationMatrix {
         }
         this.axis = axis.unit();
         this.angle = angle;
-        this.pivot = pivot;
+        this.pivot = pivot.clone();
     }
 
     Vec3 getAxis() {
@@ -47,7 +47,7 @@ class RotationMatrix {
     }
 
     void setPivot(Vec3 v) {
-        pivot = v;
+        pivot = v.clone();
     }
 
     SimpleMatrix mult(SimpleMatrix mat) {
