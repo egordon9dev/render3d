@@ -126,4 +126,9 @@ class Vec3 implements Cloneable {
     public Vec3 clone() {
         return new Vec3(v[0], v[1], v[2]);
     }
+
+    @Override
+    public String toString() {
+        return String.format("(%.3f, %.3f, %.3f)", v[0], v[1], v[2]);
+    }
 }

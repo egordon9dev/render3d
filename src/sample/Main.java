@@ -1,6 +1,7 @@
 package sample;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
@@ -67,8 +68,8 @@ public class Main extends Application {
             double z = Math.abs(vertices.get(2, i));
             vertices.set(0, i, vertices.get(0, i) / (z * 0.5));
             vertices.set(1, i, vertices.get(1, i) / (z * 0.5));
-            Vec3 toI = new Vec3(vertices.get(0, i) - cameraPos.get(0), vertices.get(1, i) - cameraPos.get(1), vertices.get(2, i) - cameraPos.get(2));
-            if (toI.dot(cameraGaze) < 0) {
+            Vec3 toI = new Vec3(vertices.get(0, i), vertices.get(1, i), vertices.get(2, i));
+            if (vertices.get(2, i) > 0) {
                 return null;
             }
             sum.plus(new Vec3(vertices.get(0, i), vertices.get(1, i), vertices.get(2, i)));
@@ -126,14 +127,20 @@ public class Main extends Application {
         RotationMatrix rotVertical = new RotationMatrix(Axis.X, 0, new Vec3(0, 0, 0));
         RotationMatrix rotHorizontal = new RotationMatrix(Axis.Y, 0, new Vec3(0, 0, 0));
         RotationMatrix rotToZAxis = new RotationMatrix(Axis.Y, 0, new Vec3(0, 0, 0));
+        RotationMatrix rotAroundZAxis = new RotationMatrix(Axis.Z, 0, new Vec3(0, 0, 0));
+        Text cameraPosText = new Text(200, 200, "FILEER"), cameraGazeText = new Text(300, 350, "TESTINGTESTIMG");
+        cameraPosText.setFont(new Font(20));
+        cameraGazeText.setFont(new Font(20));
         Timeline animation = new Timeline(new KeyFrame(Duration.millis(10), e -> {
             rotVertical.setAxis(cameraGaze.cross(cameraUp));
             rotVertical.setAngle(cameraRotVel.get(0));
-            rotHorizontal.setAxis(cameraUp);
+            rotHorizontal.setAxis(new Vec3(0, 1, 0));
             rotHorizontal.setAngle(cameraRotVel.get(1));
+
             cameraGaze = rotHorizontal.mult(cameraGaze);
-            cameraGaze = rotVertical.mult(cameraGaze);
             cameraUp = rotHorizontal.mult(cameraUp);
+
+            cameraGaze = rotVertical.mult(cameraGaze);
             cameraUp = rotVertical.mult(cameraUp);
             SimpleMatrix cameraBasis = getCameraBasis();
             //----- update camera position and gaze direction -----
@@ -156,20 +163,35 @@ public class Main extends Application {
 //            SimpleMatrix verticesInBasis = cameraBasis.invert().mult(verticesMatrix.minus(cameraPosMatrix));
             //----- prepare for projection: rotate gaze direction to z-axis
             double rotationAngle = cameraGaze.angleBetween(new Vec3(0, 0, -1));
-//            if (rotationAngle > Math.PI / 2) rotationAngle -= Math.PI;
             rotToZAxis.setAngle(rotationAngle);
-            rotToZAxis.setPivot(cameraPos);
+            rotToZAxis.setPivot(new Vec3());
             Vec3 rotationAxis = cameraGaze.cross(new Vec3(0, 0, -1));
             if (rotationAxis.mag() > 0.000001) {
                 rotToZAxis.setAxis(rotationAxis);
-                verticesMatrix = rotToZAxis.mult(verticesMatrix);
+                verticesMatrix = rotToZAxis.mult(verticesMatrix.minus(cameraPosMatrix));
+                rotToZAxis.setPivot(0, 0, 0);
+                Vec3 rotatedCameraUp = rotToZAxis.mult(cameraUp);
+                double spin = rotatedCameraUp.angleBetween(Vec3.J);
+                if (spin > 0.000001) {
+                    rotAroundZAxis.setAngle(spin);
+                    Vec3 axis = rotatedCameraUp.cross(Vec3.J);
+                    //pivot is (0,0,0)
+                    rotAroundZAxis.setAxis(axis);
+                    verticesMatrix = rotAroundZAxis.mult(verticesMatrix);
+//                    throw new IndexOutOfBoundsException("FUCK spin is " + spin + "cameraUp:" + cameraUp + "rotatedCameraUp: " + rotatedCameraUp);
+
+                }
+                verticesMatrix = verticesMatrix.plus(cameraPosMatrix);
             }
             int cols = verticesMatrix.numCols();
             if (cols != 8) {
                 throw new ArithmeticException("Oops we lost sum columns. cols: " + cols);
             }
+
             lines = getEdges(verticesMatrix.minus(cameraPosMatrix));
             pane.getChildren().clear();
+            cameraGazeText.setText(cameraGaze.toString());
+            cameraPosText.setText(cameraPos.toString());
             if (lines != null) {
                 pane.getChildren().addAll(lines);
             }
@@ -261,6 +283,8 @@ public class Main extends Application {
             borderPane.requestFocus();
         });
         footer.getChildren().addAll(smallerButton, biggerButton, field);
+        footer.getChildren().addAll(cameraPosText, cameraGazeText);
+        footer.setSpacing(10);
         borderPane.setCenter(pane);
         borderPane.setBottom(footer);
 

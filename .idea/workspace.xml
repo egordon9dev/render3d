@@ -7,7 +7,11 @@
       <change beforePath="$PROJECT_DIR$/out/production/render3D/sample/Main$2.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/render3D/sample/Main$2.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/render3D/sample/Main$3.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/render3D/sample/Main$3.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/render3D/sample/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/render3D/sample/Main.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/render3D/sample/RotationMatrix.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/render3D/sample/RotationMatrix.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/render3D/sample/Vec3.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/render3D/sample/Vec3.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/sample/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/sample/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sample/RotationMatrix.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/sample/RotationMatrix.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/sample/Vec3.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/sample/Vec3.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

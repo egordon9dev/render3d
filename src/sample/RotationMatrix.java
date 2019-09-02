@@ -46,8 +46,14 @@ class RotationMatrix {
         axis = axis.unit();
     }
 
+    void setPivot(double d1, double d2, double d3) {
+        pivot.set(0, d1);
+        pivot.set(0, d2);
+        pivot.set(0, d3);
+    }
+
     void setPivot(Vec3 v) {
-        pivot = v.clone();
+        setPivot(v.get(0), v.get(1), v.get(1));
     }
 
     SimpleMatrix mult(SimpleMatrix mat) {
@@ -103,7 +109,8 @@ class RotationMatrix {
                 {v1.get(2), v2.get(2), v3.get(2)}
         });
         SimpleMatrix verticesInBasis = basis.invert().mult(mat.minus(transMatrix));
-        SimpleMatrix result = basis.mult(rot).mult(verticesInBasis).plus(transMatrix);
+        SimpleMatrix result = basis.mult(rot).mult(verticesInBasis);
+        result = result.plus(transMatrix);
         SimpleMatrix deltaf = result.minus(transMatrix);
         double[] magf = new double[deltaf.numCols()];
         for (int col = 0; col < deltaf.numCols(); col++) {
